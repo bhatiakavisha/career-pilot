@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Terminal,
   User,
@@ -17,21 +17,24 @@ import {
 function useTypingEffect(text, speed = 40, startDelay = 0) {
   const [displayed, setDisplayed] = useState("");
   const [done, setDone] = useState(false);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       let i = 0;
-      const interval = setInterval(() => {
+      intervalRef.current = setInterval(() => {
         setDisplayed(text.slice(0, i + 1));
         i++;
         if (i >= text.length) {
-          clearInterval(interval);
+          clearInterval(intervalRef.current);
           setDone(true);
         }
       }, speed);
-      return () => clearInterval(interval);
     }, startDelay);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [text, speed, startDelay]);
 
   return { displayed, done };
